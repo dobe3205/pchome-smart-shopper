@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首頁</title>
+</head>
+<body>
+    <h2>請輸入問題</h2>
+    <div>
+        <input type="text" id="queryInput" placeholder="請輸入問題...">
+        <button onclick="sendQuestion()">送出</button>
+    </div>
+    <div id="result"></div>
+    
+    <script>
+        async function sendQuestion() {
+            const query = document.getElementById('queryInput').value;
+            
+            if (!query.trim()) {
+                alert('請輸入問題');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/respone', {
+                    method: 'POST',
+                    body: JSON.stringify({"content": query })
+                });
+                
+                const data = await response.json();
+                
+                // 顯示結果
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = `
+                    <p><strong>問題:</strong> ${query}</p>
+                    <p><strong>回答:</strong> ${data.respone}</p>
+                `;
+            } catch (error) {
+                console.error('錯誤:', error);
+                document.getElementById('result').innerHTML = `<p>發生錯誤: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

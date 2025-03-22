@@ -1,0 +1,6 @@
+google-generativeai
+google-search-results
+
+fastapi
+uvicorn
+dotenv 
