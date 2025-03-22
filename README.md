@@ -1,2 +1,4 @@
-# RLCKD
-跨領域多教師知識蒸餾的強化學習方法探索
+#建立image
+docker build -t myimage .   
+#執行image
+docker run -p 8000:8000 myimage
