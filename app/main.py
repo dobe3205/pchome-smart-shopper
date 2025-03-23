@@ -1,37 +1,70 @@
-from fastapi import FastAPI,Body
+from fastapi import FastAPI, Body
 from fastapi.responses import JSONResponse
 from package import rag
 from fastapi.staticfiles import StaticFiles
 import json
 import os
+import logging
 from dotenv import load_dotenv
 
-app=FastAPI()
+# 設定日誌
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+app = FastAPI(
+    title="商品比較RAG系統",
+    description="基於RAG的商品比較系統",
+    version="1.0.0"
+)
 
 # 載入 .env 檔案
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
+# 取得API key
+gemini_api_key = os.getenv("gemini_api_key")
+google_search_api_key = os.getenv("google_search_api_key")
+google_cse_id = os.getenv("google_cse_id")
+model_name = os.getenv("model_name")
 
-#取得API key
-gemini_api_key=os.getenv("gemini_api_key")
-google_search_api_key=os.getenv("google_search_api_key")
-google_cse_id =os.getenv("google_cse_id")
-model_name=os.getenv("model_name")
+
 
 @app.post("/respone")
 async def respone(body=Body(None)):
-    user_query = json.loads(body)["content"]
-    llm_input = f"根據要求，分析需要上網查詢的資訊(內部知識不足夠)。生成需要上網查詢資訊的的關鍵字(不需要相關說明，直接回傳關鍵字，例如: 關鍵字1 關鍵字2 關鍵字3): {user_query} " 
-    print(user_query)
-    Google_Search_Keywords = rag.generate_gemini_response(llm_input, gemini_api_key, model_name)
-    search_results = rag.search_google_custom(Google_Search_Keywords, google_search_api_key, google_cse_id, num_results=10)
-    query=rag.augmented_prompt(user_query,search_results)
-    gemini_output = rag.generate_gemini_response(query, gemini_api_key, model_name)
-
-    respone={"respone":f"{gemini_output}"}
-    
-    return JSONResponse(respone)
+    """
+    處理用戶產品比較請求
+    """
+    try:
+        # 把request body轉成json
+        user_query = json.loads(body)["content"]
+        logger.info(f"收到用戶查詢: {user_query}")
+        
+        # step1: LLM生成搜尋關鍵詞
+        logger.info("step1: LLM生成搜尋關鍵詞")
+        keywords_prompt = rag.create_search_keywords_prompt(user_query) #得到關鍵字
+        search_keywords = rag.generate_gemini_response(keywords_prompt, gemini_api_key, model_name)
+        logger.info(f"生成的搜尋關鍵詞: {search_keywords}")
+        
+        # step2: 執行google搜尋取得產品資訊
+        logger.info("step2: 執行google搜尋取得產品資訊")
+        search_results = rag.search_google_custom(search_keywords, google_search_api_key, google_cse_id, num_results=50)
+        
+        # step3: step3: 整理產品資訊
+        logger.info("step3: 整理產品資訊")
+        structured_data = rag.extract_product_info(search_results, gemini_api_key, model_name)
+        
+        # step4: 生成最終產品比較和分析
+        logger.info("step4: 生成最終產品比較和分析")
+        final_prompt = rag.final_comparison_prompt(user_query, search_results, structured_data)
+        final_response = rag.generate_gemini_response(final_prompt, gemini_api_key, model_name)
+        
+        response = {"respone": f"{final_response}"}
+        return JSONResponse(response)
+        
+    except Exception as e:
+        logger.error(f"處理請求時發生錯誤: {str(e)}")
+        error_response = {"error": f"處理請求時發生錯誤: {str(e)}"}
+        return JSONResponse(content=error_response, status_code=500)
 
 
 

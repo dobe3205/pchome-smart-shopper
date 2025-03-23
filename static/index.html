@@ -1,26 +1,176 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>首頁</title>
+    <title>商品比較助手</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f8fa;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #5b9bd5;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+        .description {
+            margin-top: 10px;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .input-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .input-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        #queryInput {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            min-height: 100px;
+            font-family: inherit;
+        }
+        .example-queries {
+            margin: 20px 0;
+            color: #555;
+        }
+        .example-query {
+            background: #f0f7ff;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            border-left: 3px solid #5b9bd5;
+        }
+        .example-query:hover {
+            background: #e0f0ff;
+        }
+        button {
+            background-color: #5b9bd5;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #4a8bc2;
+        }
+        #result {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            line-height: 1.7;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+        .result-section {
+            margin-top: 20px;
+        }
+        .result-question {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #5b9bd5;
+        }
+        .result-answer {
+            padding: 0 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
 </head>
 <body>
-    <h2>請輸入問題</h2>
-    <div>
-        <input type="text" id="queryInput" placeholder="請輸入問題...">
-        <button onclick="sendQuestion()">送出</button>
-    </div>
-    <div id="result"></div>
-    
+    <header>
+        <h1>商品比較助手</h1>
+        <div class="description">基於 RAG 技術的智能商品比較與推薦系統</div>
+    </header>
+
+    <main>
+        <section class="input-section">
+            <div class="input-container">
+                <div class="input-label">請輸入您的商品需求或想比較的商品：</div>
+                <textarea id="queryInput" placeholder="例如：我想找一款適合遊戲的筆記型電腦，預算 3 萬元內，要有好的散熱和獨立顯卡。"></textarea>
+                <button onclick="sendQuestion()">分析比較</button>
+            </div>
+
+            <div class="example-queries">
+                <div class="input-label">查詢範例：</div>
+                <div class="example-query" onclick="useExample(this)">比較不同牌子的日系早餐咖啡機，預算在 2000 元以內</div>
+                <div class="example-query" onclick="useExample(this)">我想找一個輕量級電競滑鼠，預算 3000 元內</div>
+                <div class="example-query" onclick="useExample(this)">幫我比較 AirPods Pro 2 和 Samsung Galaxy Buds 2 Pro 的隔音效果和音質表現</div>
+            </div>
+        </section>
+
+        <section id="result"></section>
+    </main>
+
     <script>
+        function useExample(element) {
+            document.getElementById('queryInput').value = element.textContent;
+        }
+
         async function sendQuestion() {
             const query = document.getElementById('queryInput').value;
             
             if (!query.trim()) {
-                alert('請輸入問題');
+                alert('請輸入商品需求或比較問題');
                 return;
             }
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">正在搜尋和分析商品資訊，請稍候...<br><br>這可能需要 15-30 秒的時間</div>';
             
             try {
                 const response = await fetch('/respone', {
@@ -30,16 +180,97 @@
                 
                 const data = await response.json();
                 
+                if (data.error) {
+                    resultDiv.innerHTML = `<p class="error">發生錯誤: ${data.error}</p>`;
+                    return;
+                }
+                
+                // 將回應中的 Markdown 表格和段落轉換為 HTML
+                let formattedResponse = formatMarkdown(data.respone);
+                
                 // 顯示結果
-                const resultDiv = document.getElementById('result');
                 resultDiv.innerHTML = `
-                    <p><strong>問題:</strong> ${query}</p>
-                    <p><strong>回答:</strong> ${data.respone}</p>
+                    <div class="result-section">
+                        <div class="result-question">
+                            <strong>您的需求：</strong> ${query}
+                        </div>
+                        <div class="result-answer">${formattedResponse}</div>
+                    </div>
                 `;
             } catch (error) {
                 console.error('錯誤:', error);
-                document.getElementById('result').innerHTML = `<p>發生錯誤: ${error.message}</p>`;
+                resultDiv.innerHTML = `<p class="error">處理請求時發生錯誤: ${error.message}</p>`;
             }
+        }
+        
+        // 簡單的 Markdown 格式化函數
+        function formatMarkdown(text) {
+            if (!text) return '';
+            
+            // 轉換標題
+            text = text.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+            text = text.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+            text = text.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+            
+            // 轉換粗體
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // 轉換斜體
+            text = text.replace(/\_(.*?)\_/g, '<em>$1</em>');
+            
+            // 轉換列表
+            text = text.replace(/^\* (.*$)/gm, '<ul><li>$1</li></ul>');
+            text = text.replace(/^\- (.*$)/gm, '<ul><li>$1</li></ul>');
+            text = text.replace(/^\d+\. (.*$)/gm, '<ol><li>$1</li></ol>');
+            text = text.replace(/<\/ul><ul>/g, '');
+            text = text.replace(/<\/ol><ol>/g, '');
+            
+            // 轉換 Markdown 表格
+            if (text.includes('|')) {
+                const lines = text.split('\n');
+                let inTable = false;
+                let tableHtml = '<table>';
+                
+                for (let line of lines) {
+                    if (line.trim().startsWith('|') && line.includes('|')) {
+                        if (!inTable) {
+                            inTable = true;
+                        }
+                        
+                        // 處理表格分隔行
+                        if (line.includes('---')) {
+                            continue;
+                        }
+                        
+                        const cells = line.split('|').filter(cell => cell.trim() !== '');
+                        const isHeader = !tableHtml.includes('<tr>');
+                        
+                        tableHtml += '<tr>';
+                        for (let cell of cells) {
+                            if (isHeader) {
+                                tableHtml += `<th>${cell.trim()}</th>`;
+                            } else {
+                                tableHtml += `<td>${cell.trim()}</td>`;
+                            }
+                        }
+                        tableHtml += '</tr>';
+                    } else if (inTable) {
+                        inTable = false;
+                        tableHtml += '</table>';
+                        text = text.replace(/\|[^\n]*\|[^\n]*\|/g, tableHtml);
+                    }
+                }
+                
+                if (inTable) {
+                    tableHtml += '</table>';
+                    text = text.replace(/\|[^\n]*\|[^\n]*\|/g, tableHtml);
+                }
+            }
+            
+            // 轉換段落
+            text = text.replace(/\n\s*\n/g, '<br><br>');
+            
+            return text;
         }
     </script>
 </body>

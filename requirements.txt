@@ -1,6 +1,10 @@
-google-generativeai
-google-search-results
+google-generativeai>=0.7.0
+google-api-python-client>=2.100.0
 
-fastapi
-uvicorn
-dotenv 
+fastapi>=0.104.0
+uvicorn>=0.23.2
+python-dotenv>=1.0.0
+pydantic>=2.4.2
+
+# 日誌和監控
+loguru>=0.7.0
