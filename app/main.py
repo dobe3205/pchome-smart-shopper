@@ -42,21 +42,21 @@ async def respone(body=Body(None)):
         # step1: LLM生成搜尋關鍵詞
         logger.info("step1: LLM生成搜尋關鍵詞")
         keywords_prompt = rag.create_search_keywords_prompt(user_query) #得到關鍵字
-        search_keywords = rag.generate_gemini_response(keywords_prompt, gemini_api_key, model_name)
+        search_keywords = rag.gemini_response(keywords_prompt, gemini_api_key, model_name)
         logger.info(f"生成的搜尋關鍵詞: {search_keywords}")
         
         # step2: 執行google搜尋取得產品資訊
         logger.info("step2: 執行google搜尋取得產品資訊")
-        search_results = rag.search_google_custom(search_keywords, google_search_api_key, google_cse_id, num_results=50)
+        search_results = rag.google_search(search_keywords, google_search_api_key, google_cse_id, num_results=5)
         
-        # step3: step3: 整理產品資訊
-        logger.info("step3: 整理產品資訊")
-        structured_data = rag.extract_product_info(search_results, gemini_api_key, model_name)
+        # step3: step3: 整理pchome產品資訊
+        logger.info("step3: 整理pchome產品資訊")
+        retrival_info = rag.pchome_search(search_results)
         
-        # step4: 生成最終產品比較和分析
-        logger.info("step4: 生成最終產品比較和分析")
-        final_prompt = rag.final_comparison_prompt(user_query, search_results, structured_data)
-        final_response = rag.generate_gemini_response(final_prompt, gemini_api_key, model_name)
+        # step4: 生成產品比較和分析
+        logger.info("step4: 生成產品比較和分析")
+        final_prompt = rag.final_comparison_prompt(user_query,retrival_info)
+        final_response = rag.gemini_response(final_prompt, gemini_api_key, model_name)
         
         response = {"respone": f"{final_response}"}
         return JSONResponse(response)

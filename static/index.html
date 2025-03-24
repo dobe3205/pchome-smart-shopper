@@ -186,7 +186,7 @@
                 }
                 
                 // 將回應中的 Markdown 表格和段落轉換為 HTML
-                let formattedResponse = formatMarkdown(data.respone);
+                //let formattedResponse = formatMarkdown(data.respone);
                 
                 // 顯示結果
                 resultDiv.innerHTML = `
@@ -194,7 +194,7 @@
                         <div class="result-question">
                             <strong>您的需求：</strong> ${query}
                         </div>
-                        <div class="result-answer">${formattedResponse}</div>
+                        <div class="result-answer">${data.respone}</div>
                     </div>
                 `;
             } catch (error) {
@@ -203,75 +203,8 @@
             }
         }
         
-        // 簡單的 Markdown 格式化函數
-        function formatMarkdown(text) {
-            if (!text) return '';
-            
-            // 轉換標題
-            text = text.replace(/^### (.*$)/gm, '<h3>$1</h3>');
-            text = text.replace(/^## (.*$)/gm, '<h2>$1</h2>');
-            text = text.replace(/^# (.*$)/gm, '<h1>$1</h1>');
-            
-            // 轉換粗體
-            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            
-            // 轉換斜體
-            text = text.replace(/\_(.*?)\_/g, '<em>$1</em>');
-            
-            // 轉換列表
-            text = text.replace(/^\* (.*$)/gm, '<ul><li>$1</li></ul>');
-            text = text.replace(/^\- (.*$)/gm, '<ul><li>$1</li></ul>');
-            text = text.replace(/^\d+\. (.*$)/gm, '<ol><li>$1</li></ol>');
-            text = text.replace(/<\/ul><ul>/g, '');
-            text = text.replace(/<\/ol><ol>/g, '');
-            
-            // 轉換 Markdown 表格
-            if (text.includes('|')) {
-                const lines = text.split('\n');
-                let inTable = false;
-                let tableHtml = '<table>';
-                
-                for (let line of lines) {
-                    if (line.trim().startsWith('|') && line.includes('|')) {
-                        if (!inTable) {
-                            inTable = true;
-                        }
-                        
-                        // 處理表格分隔行
-                        if (line.includes('---')) {
-                            continue;
-                        }
-                        
-                        const cells = line.split('|').filter(cell => cell.trim() !== '');
-                        const isHeader = !tableHtml.includes('<tr>');
-                        
-                        tableHtml += '<tr>';
-                        for (let cell of cells) {
-                            if (isHeader) {
-                                tableHtml += `<th>${cell.trim()}</th>`;
-                            } else {
-                                tableHtml += `<td>${cell.trim()}</td>`;
-                            }
-                        }
-                        tableHtml += '</tr>';
-                    } else if (inTable) {
-                        inTable = false;
-                        tableHtml += '</table>';
-                        text = text.replace(/\|[^\n]*\|[^\n]*\|/g, tableHtml);
-                    }
-                }
-                
-                if (inTable) {
-                    tableHtml += '</table>';
-                    text = text.replace(/\|[^\n]*\|[^\n]*\|/g, tableHtml);
-                }
-            }
-            
-            // 轉換段落
-            text = text.replace(/\n\s*\n/g, '<br><br>');
-            
-            return text;
-        }
+        
+
     </script>
 </body>
 </html>
