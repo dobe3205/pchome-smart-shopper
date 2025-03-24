@@ -35,8 +35,12 @@ async def respone(body=Body(None)):
     處理用戶產品比較請求
     """
     try:
-        # 把request body轉成json
-        user_query = json.loads(body)["content"]
+        # 處理 request body
+        if isinstance(body, dict):
+            user_query = body["content"]
+        else:
+            # 如果不是字典，嘗試解析 JSON
+            user_query = json.loads(body)["content"]
         logger.info(f"收到用戶查詢: {user_query}")
         
         # step1: LLM生成搜尋關鍵詞
@@ -47,7 +51,7 @@ async def respone(body=Body(None)):
         
         # step2: 執行google搜尋取得產品資訊
         logger.info("step2: 執行google搜尋取得產品資訊")
-        search_results = rag.google_search(search_keywords, google_search_api_key, google_cse_id, num_results=5)
+        search_results = rag.google_search(search_keywords, google_search_api_key, google_cse_id, num_results=10)
         
         # step3: step3: 整理pchome產品資訊
         logger.info("step3: 整理pchome產品資訊")
@@ -69,4 +73,8 @@ async def respone(body=Body(None)):
 
 
 
-app.mount("/",StaticFiles(directory="static",html=True))
+# 靜態文件服務
+app.mount("/css", StaticFiles(directory="static/css"), name="css")
+app.mount("/js", StaticFiles(directory="static/js"), name="js")
+app.mount("/img", StaticFiles(directory="static/img"), name="img")
+app.mount("/", StaticFiles(directory="static", html=True), name="static")

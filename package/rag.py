@@ -16,12 +16,40 @@ def create_search_keywords_prompt(user_query):
     Returns:
         融合提示詞的query
     """
-    return f"""你是電商產品專家。根據以下用戶需求，分析並生成最有效的搜尋關鍵字組合。
+    return f"""
+            我需要你擔任關鍵字生成專家，根據用戶的購物需求生成精確的搜尋關鍵字。請保持簡潔，每次只產生最多2個最相關的關鍵字，不需要任何解釋。
+
+            以下是範例：
+
+            用戶需求: 我想找一台價格在5萬以內，輕薄但性能還不錯的筆電
+            關鍵字: 輕薄筆電 高性價比
+
+            用戶需求: 推薦一款拍照效果好的手機，預算1萬5以內
+            關鍵字: 拍照手機 平價
+
+            用戶需求: 我需要一個可以防塵防水的手錶，適合運動時佩戴
+            關鍵字: 運動手錶 防水
+
+            用戶需求: 幫我找一個時尚的女用側背包，皮質的比較好
+            關鍵字: 皮質側背包 女用
+
+            用戶需求: 想買一個能煮多種料理的電子鍋，最好是小型的
+            關鍵字: 多功能電子鍋 小型
+
+            用戶需求: 幫我找一款日系品牌的咖啡機，預算5000元以內
+            關鍵字: 日系咖啡機 中價位
+
+            用戶需求: 比較不同牌子的藍芽耳機，想要降噪效果好的
+            關鍵字: 降噪耳機 藍芽
+
+            用戶需求: 尋找適合初學者的單眼相機，價格不要太貴
+            關鍵字: 單眼相機 平價
+
+            用戶需求: 我想要一台可以語音控制的智慧家電，例如電視或是音響
+            關鍵字: 智慧家電 語音控制
+
+            現在，請根據以下用戶需求產生關鍵字：
             用戶需求: {user_query}
-            請分析:1. 產品類型與核心功能 2. 規格或特性要求 3. 用戶比較的特徵(價格、性能、品牌等)
-            輸出3個精確的搜尋關鍵字組合，每組用於搜尋一個可能的相關產品。
-            格式: 關鍵字1 關鍵字2 關鍵字3 
-            無需解釋，僅輸出3個關鍵字。
             """
 
 def gemini_response(llm_input, model_api_key, model_name):
@@ -79,7 +107,7 @@ def google_search(query, google_search_api_key, google_cse_id, num_results):
             "hl": "zh-TW"           #搜尋結果語言偏好（繁體中文）
         }
         
-        logger.info(f"執行Google搜尋，關鍵詞: {query}")
+        logger.info(f"執行Google搜尋，關鍵字: {query}")
         response = service.cse().list(**search_params).execute()
         
         results = response.get("items", []) #需要的內容都在items(key)，value為array裡面是dict
@@ -113,7 +141,7 @@ def final_comparison_prompt(user_query, retrival_info=None):
 
     # 創建比較產品的提示詞
     prompt = f"""
-    你是專業的產品顧問，專門幫助用戶做出最佳購買決策。請根據用戶需求和提供的產品資訊，進行全面的分析。
+    你是專業的產品顧問，專門幫助用戶做出最佳購買決策。請根據用戶需求和提供的產品資訊，進行全面的分析並以純文字回答。
 
     # 用戶需求
     {user_query}
@@ -268,80 +296,3 @@ def get_pchome_product_info(url):
        return f"爬取商品資訊時發生錯誤: {str(e)}"
    
 
-
-
-# 舊版，暫時用不到
-def augmented_prompt(query, search_results):
-    """
-    將檢索到的資料加到查詢中
-    Args:
-        query: 用戶查詢
-        search_results: 搜尋結果
-        
-    Returns:
-        增強的提示詞
-    """
-    # 建立 LLM 輸入字串
-    retrieval_content = ""
-    for result in search_results:
-        retrieval_content += f"標題：{result['標題']}\n"
-        retrieval_content += f"摘要：{result['摘要']}\n"
-    prompt = f"請你做出正常的回應，不必提到你參考過哪些資料，這是使用者提問的問題:\n{query}"+f"請參考以下資料做出回應:\n{retrieval_content}"
-    return prompt
-
-#暫時用不到
-def extract_product_info(search_results, gemini_api_key, model_name):
-    """
-    設計整理產品特性的提示詞，處理google search得到的檢索資料，整理出產品特點
-    Args:
-        search_results: 搜尋返回的產品資訊列表
-        gemini_api_key: Gemini API金鑰
-        model_name: 使用的模型名稱
-        
-    Returns:
-        整理過的檢索資料(JSON格式)
-    """
-    # 將搜尋結果格式化為文本
-    search_content = ""
-    for i, result in enumerate(search_results, 1):
-        search_content += f"來源 {i}:\n"
-        search_content += f"標題: {result['標題']}\n"
-        search_content += f"摘要: {result['摘要']}\n"
-        if '連結' in result:
-            search_content += f"連結: {result['連結']}\n"
-        if '來源' in result:
-            search_content += f"來源網站: {result['來源']}\n"
-        search_content += "\n"
-    
-    # 創建產品提示詞
-    extraction_prompt = f"""
-    你是產品分析專家。請從以下搜尋結果中識別並整理所有的產品資訊。
-    搜尋結果:
-    {search_content}
-
-    請執行以下步驟:
-    1. 首先思考搜尋結果中提到的是哪些產品 (品牌和型號)
-    2. 對於每個識別出的產品，整理以下資訊:
-    - 完整產品名稱
-    - 品牌
-    - 型號
-    - 價格(如果提到)
-    - 主要技術規格(如處理器、記憶體、儲存等)
-    - 關鍵特性和賣點
-    - 評價要點(如果提到)
-
-    3. 將資訊以JSON格式輸出:
-    {{"products": [
-    {{"name": "完整產品名稱", "brand": "品牌", "model": "型號", "price": "價格", "specs": ["規格1", "規格2"], "features": ["特性1", "特性2"], "ratings": "評價"}},
-    {{...另一產品...}}
-    ]}}
-
-    僅輸出JSON格式，不要有其它文字。如果某個欄位無法確定，使用空字符串""。
-    """
-    
-    # 使用Gemini提取產品資訊
-    logger.info("開始整理產品資訊")
-    structured_data = generate_gemini_response(extraction_prompt, gemini_api_key, model_name)
-    logger.info("整理產品資訊完成")
-    
-    return structured_data

@@ -3,208 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商品比較助手</title>
-    <style>
-        body {
-            font-family: 'Microsoft JhengHei', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f8fa;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #5b9bd5;
-            color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            margin: 0;
-            font-size: 2.2em;
-        }
-        .description {
-            margin-top: 10px;
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        .input-section {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        .input-container {
-            display: flex;
-            flex-direction: column;
-        }
-        .input-label {
-            font-weight: bold;
-            margin-bottom: 10px;
-            font-size: 1.1em;
-        }
-        #queryInput {
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            margin-bottom: 15px;
-            min-height: 100px;
-            font-family: inherit;
-        }
-        .example-queries {
-            margin: 20px 0;
-            color: #555;
-        }
-        .example-query {
-            background: #f0f7ff;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 4px;
-            cursor: pointer;
-            border-left: 3px solid #5b9bd5;
-        }
-        .example-query:hover {
-            background: #e0f0ff;
-        }
-        button {
-            background-color: #5b9bd5;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #4a8bc2;
-        }
-        #result {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            line-height: 1.7;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            font-style: italic;
-            color: #666;
-        }
-        .result-section {
-            margin-top: 20px;
-        }
-        .result-question {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border-left: 4px solid #5b9bd5;
-        }
-        .result-answer {
-            padding: 0 10px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-    </style>
+    <title>PChome 智能商品比較助手</title>
+    <!-- Font Awesome 圖標 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- CSS樣式 -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header>
-        <h1>商品比較助手</h1>
-        <div class="description">基於 RAG 技術的智能商品比較與推薦系統</div>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-shopping-cart logo-icon"></i>
+                <div class="logo-text">PChome 智能助手</div>
+            </div>
+            <div class="tagline">基於 RAG 技術的智能商品比較與推薦系統</div>
+        </div>
     </header>
 
     <main>
+        <section class="hero-section">
+            <h1 class="hero-title">智能商品比較與推薦</h1>
+            <p class="hero-description">描述您的需求，我們將幫您篩選與比較最適合的商品</p>
+        </section>
+
         <section class="input-section">
             <div class="input-container">
-                <div class="input-label">請輸入您的商品需求或想比較的商品：</div>
+                <label class="input-label">
+                    <i class="fas fa-search"></i>
+                    請輸入您的商品需求或想比較的商品：
+                </label>
                 <textarea id="queryInput" placeholder="例如：我想找一款適合遊戲的筆記型電腦，預算 3 萬元內，要有好的散熱和獨立顯卡。"></textarea>
-                <button onclick="sendQuestion()">分析比較</button>
+                <div class="button-container">
+                    <button id="clearBtn" class="btn btn-outline">清除</button>
+                    <button id="submitBtn" class="btn btn-primary">智能分析</button>
+                </div>
             </div>
 
             <div class="example-queries">
-                <div class="input-label">查詢範例：</div>
-                <div class="example-query" onclick="useExample(this)">比較不同牌子的日系早餐咖啡機，預算在 2000 元以內</div>
-                <div class="example-query" onclick="useExample(this)">我想找一個輕量級電競滑鼠，預算 3000 元內</div>
-                <div class="example-query" onclick="useExample(this)">幫我比較 AirPods Pro 2 和 Samsung Galaxy Buds 2 Pro 的隔音效果和音質表現</div>
+                <div class="example-query-title">
+                    <i class="fas fa-lightbulb"></i>
+                    查詢範例：
+                </div>
+                <div class="example-queries-container">
+                    <div class="example-query">我想要購買一台電競筆電，需要能夠玩新出的3A大作，有推薦的嗎?</div>
+                    <div class="example-query">我想找一個平板，預算有限，能做筆記就好</div>
+                    <div class="example-query">幫我比較不同品牌的藍芽耳機，想要買續航力好一點的</div>
+                </div>
             </div>
         </section>
 
-        <section id="result"></section>
+        <section id="result" class="result-section"></section>
     </main>
 
-    <script>
-        function useExample(element) {
-            document.getElementById('queryInput').value = element.textContent;
-        }
+    <footer>
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="footer-title">關於本系統</h3>
+                    <p class="footer-text">PChome 智能商品比較助手採用最新的檢索增強生成技術，為您提供客觀、專業的商品建議。</p>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                &copy; 2025 PChome 智能商品比較助手
+            </div>
+        </div>
+    </footer>
 
-        async function sendQuestion() {
-            const query = document.getElementById('queryInput').value;
-            
-            if (!query.trim()) {
-                alert('請輸入商品需求或比較問題');
-                return;
-            }
-            
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = '<div class="loading">正在搜尋和分析商品資訊，請稍候...<br><br>這可能需要 15-30 秒的時間</div>';
-            
-            try {
-                const response = await fetch('/respone', {
-                    method: 'POST',
-                    body: JSON.stringify({"content": query })
-                });
-                
-                const data = await response.json();
-                
-                if (data.error) {
-                    resultDiv.innerHTML = `<p class="error">發生錯誤: ${data.error}</p>`;
-                    return;
-                }
-                
-                // 將回應中的 Markdown 表格和段落轉換為 HTML
-                //let formattedResponse = formatMarkdown(data.respone);
-                
-                // 顯示結果
-                resultDiv.innerHTML = `
-                    <div class="result-section">
-                        <div class="result-question">
-                            <strong>您的需求：</strong> ${query}
-                        </div>
-                        <div class="result-answer">${data.respone}</div>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('錯誤:', error);
-                resultDiv.innerHTML = `<p class="error">處理請求時發生錯誤: ${error.message}</p>`;
-            }
-        }
-        
-        
-
-    </script>
+    <!-- 自定義 JavaScript -->
+    <script src="js/main.js"></script>
 </body>
 </html>
