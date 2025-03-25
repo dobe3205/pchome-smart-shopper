@@ -27,7 +27,7 @@
             document.getElementById('result').innerHTML = '處理中...';
             
             try {
-                const response = await fetch("/respone", {
+                const response = await fetch("/api/respone", {
                     method: "POST",
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({"content": question})

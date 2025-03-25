@@ -2,11 +2,7 @@
 
 一個使用 Retrieval-Augmented Generation (RAG) 技術的商品比較和推薦系統。系統可以根據用戶需求，通過網路搜尋不同產品的資訊，並生成產品比較分析和購買建議。
 
-## 系統架構
 
-- **前端**: 簡單的 HTML 頁面，用於用戶輸入商品需求和展示結果
-- **後端**: FastAPI 應用，處理用戶請求和協調 RAG 流程
-- **RAG 引擎**: 使用 Google Gemini API 作為 LLM，結合 Google Custom Search API 進行外部知識檢索
 
 ##  RAG 處理流程
 
@@ -39,7 +35,7 @@
    gemini_api_key="YOUR_GEMINI_API_KEY" 
    google_search_api_key="YOUR_GOOGLE_SEARCH_API_KEY"
    google_cse_id ="YOUR_GOOGLE_CSE_ID"
-   model_name="gemini-1.5-flash"
+   model_name="gemini-2.0-flash"
    ```
 
 ## 運行方式

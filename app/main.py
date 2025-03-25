@@ -1,7 +1,10 @@
 from fastapi import FastAPI, Body
 from fastapi.responses import JSONResponse
-from package import rag
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
+from package import rag
+
 import json
 import os
 import logging
@@ -27,9 +30,20 @@ google_search_api_key = os.getenv("google_search_api_key")
 google_cse_id = os.getenv("google_cse_id")
 model_name = os.getenv("model_name")
 
+#CORS
+origins = [
+    "http://localhost:4200",
+]
+app.add_middleware(
+    CORSMiddleware, #CORS
+    allow_origins=origins,  #允許的url
+    allow_credentials=True, #憑證
+    allow_methods=["*"],    #允許所有method(GET、POST...)
+    allow_headers=["*"],    #允許所有header
+)
 
 
-@app.post("/respone")
+@app.post("/api/respone")
 async def respone(body=Body(None)):
     """
     處理用戶產品比較請求

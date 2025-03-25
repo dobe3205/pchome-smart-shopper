@@ -1,16 +1,13 @@
-#google api
+
 google-generativeai>=0.7.0
 google-api-python-client>=2.100.0
 
-#後端
 fastapi>=0.104.0
 uvicorn>=0.23.2
 python-dotenv>=1.0.0
 pydantic>=2.4.2
 
-#爬蟲
-request
+requests
 beautifulsoup4
 
-# 日誌
 loguru>=0.7.0

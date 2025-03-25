@@ -94,7 +94,7 @@ def google_search(query, google_search_api_key, google_cse_id, num_results):
     Returns:
         搜尋結果的列表，每個結果包含 title、link 和 snippet。
     """
-    pchome_query = f"inurl:24h.pchome.com.tw/prod {query}" #限制搜尋結果
+    pchome_query = f"inurl:24h.pchome.com.tw/prod {query}" #用inurl限制搜尋結果
     service = build("customsearch", "v1", developerKey=google_search_api_key)
     try:
         # 優化檢索參數
