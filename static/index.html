@@ -34,14 +34,15 @@
                 });
                 
                 const data = await response.json();
+                console.log(data)
                 
                 if (data.error) {
-                    document.getElementById('result').innerHTML = `錯誤: ${data.error}`;
+                    document.getElementById('result').innerHTML = '錯誤: ${data.error}';
                 } else {
-                    document.getElementById('result').innerHTML = data.respone;
+                    document.getElementById('result').innerHTML = '正常';
                 }
             } catch (error) {
-                document.getElementById('result').innerHTML = `錯誤: ${error.message}`;
+                document.getElementById('result').innerHTML = '錯誤: ${error.message}';
             }
         }
     </script>

@@ -17,36 +17,36 @@ def create_search_keywords_prompt(user_query):
         融合提示詞的query
     """
     return f"""
-            我需要你擔任關鍵字生成專家，根據用戶的購物需求生成精確的搜尋關鍵字。請保持簡潔，每次只產生最多2個最相關的關鍵字，不需要任何解釋。
+            我需要你擔任關鍵字生成專家，根據用戶的購物需求生成精確的搜尋關鍵字。請保持簡潔，每次只產生1到2個最相關的關鍵字，不需要任何解釋。
 
             以下是範例：
 
             用戶需求: 我想找一台價格在5萬以內，輕薄但性能還不錯的筆電
-            關鍵字: 輕薄筆電 高性價比
+            關鍵字: 筆電 輕薄
 
             用戶需求: 推薦一款拍照效果好的手機，預算1萬5以內
-            關鍵字: 拍照手機 平價
+            關鍵字: 手機 拍照
 
             用戶需求: 我需要一個可以防塵防水的手錶，適合運動時佩戴
             關鍵字: 運動手錶 防水
 
             用戶需求: 幫我找一個時尚的女用側背包，皮質的比較好
-            關鍵字: 皮質側背包 女用
+            關鍵字: 側背包 女用
 
             用戶需求: 想買一個能煮多種料理的電子鍋，最好是小型的
             關鍵字: 多功能電子鍋 小型
 
             用戶需求: 幫我找一款日系品牌的咖啡機，預算5000元以內
-            關鍵字: 日系咖啡機 中價位
+            關鍵字: 日系咖啡機 
 
             用戶需求: 比較不同牌子的藍芽耳機，想要降噪效果好的
-            關鍵字: 降噪耳機 藍芽
+            關鍵字: 藍芽耳機 降噪
 
             用戶需求: 尋找適合初學者的單眼相機，價格不要太貴
             關鍵字: 單眼相機 平價
 
             用戶需求: 我想要一台可以語音控制的智慧家電，例如電視或是音響
-            關鍵字: 智慧家電 語音控制
+            關鍵字: 智慧家電 語音
 
             現在，請根據以下用戶需求產生關鍵字：
             用戶需求: {user_query}
@@ -138,10 +138,41 @@ def final_comparison_prompt(user_query, retrival_info=None):
     Returns:
         最終的產品比較提示詞
     """
-
+    spec={
+        "comparison_results": {
+            "best_choice": "Product Name",
+            "best_value": "Product Name",
+            "best_quality": "Product Name",
+            "most_features": "Product Name"
+        },
+        "product_comparisons": [
+            {
+                "product_name": "Product A",
+                "brand": "Brand Name",
+                "price": "Price",
+                "pros": ["Pro 1", "Pro 2", "..."],
+                "cons": ["Con 1", "Con 2", "..."],
+                "key_features": ["Feature 1", "Feature 2", "..."],
+                "suitable_scenarios": ["Scenario 1", "Scenario 2", "..."],
+                "rating": 8.5
+            },
+            {
+                "product_name": "Product B",
+                "brand": "Brand Name",
+                "price": "Price",
+                "pros": ["Pro 1", "Pro 2", "..."],
+                "cons": ["Con 1", "Con 2", "..."],
+                "key_features": ["Feature 1", "Feature 2", "..."],
+                "suitable_scenarios": ["Scenario 1", "Scenario 2", "..."],
+                "rating": 7.8
+            }
+            ],
+        "analysis": "Overall comparison analysis and recommendations"
+        }
     # 創建比較產品的提示詞
     prompt = f"""
-    你是專業的產品顧問，專門幫助用戶做出最佳購買決策。請根據用戶需求和提供的產品資訊，進行全面的分析並以純文字回答。
+    你是專業的產品顧問，專門幫助用戶做出最佳購買決策。請根據用戶需求和提供的產品資訊，進行全面的分析並以JSON格式回答結構如以下所示，回答請跟結構一模一樣，不用附加額外訊息，也不要使用markdown格式:
+    {spec}
 
     # 用戶需求
     {user_query}

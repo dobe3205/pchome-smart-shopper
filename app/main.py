@@ -62,7 +62,7 @@ async def respone(body=Body(None)):
         final_prompt = rag.final_comparison_prompt(user_query,retrival_info)
         final_response = rag.gemini_response(final_prompt, gemini_api_key, model_name)
         
-        response = {"respone": f"{final_response}"}
+        response = extract_json_from_response(final_response)
         return JSONResponse(response)
         
     except Exception as e:
@@ -70,7 +70,11 @@ async def respone(body=Body(None)):
         error_response = {"error": f"處理請求時發生錯誤: {str(e)}"}
         return JSONResponse(content=error_response, status_code=500)
 
-
+def extract_json_from_response(response):
+    if "```json" in response:
+        parts = response.split("```json")
+        json_part = parts[1].split("```")[0].strip()
+        return json_part
 
 
 # 靜態文件
