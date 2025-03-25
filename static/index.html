@@ -3,73 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PChome 智能商品比較助手</title>
-    <!-- Font Awesome 圖標 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- CSS樣式 -->
-    <link rel="stylesheet" href="css/style.css">
+    <title>問答系統</title>
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <div class="logo">
-                <i class="fas fa-shopping-cart logo-icon"></i>
-                <div class="logo-text">PChome 智能助手</div>
-            </div>
-            <div class="tagline">基於 RAG 技術的智能商品比較與推薦系統</div>
-        </div>
-    </header>
+    <h1>商品比較問答系統</h1>
+    
+    <form id="questionForm" onsubmit="return false;">
+        <input type="text" id="questionInput" placeholder="請輸入您的問題...">
+        <button onclick="post_response()">送出問題</button>
+    </form>
+    
+    <div id="result">問答結果將顯示在這裡...</div>
 
-    <main>
-        <section class="hero-section">
-            <h1 class="hero-title">智能商品比較與推薦</h1>
-            <p class="hero-description">描述您的需求，我們將幫您篩選與比較最適合的商品</p>
-        </section>
-
-        <section class="input-section">
-            <div class="input-container">
-                <label class="input-label">
-                    <i class="fas fa-search"></i>
-                    請輸入您的商品需求或想比較的商品：
-                </label>
-                <textarea id="queryInput" placeholder="例如：我想找一款適合遊戲的筆記型電腦，預算 3 萬元內，要有好的散熱和獨立顯卡。"></textarea>
-                <div class="button-container">
-                    <button id="clearBtn" class="btn btn-outline">清除</button>
-                    <button id="submitBtn" class="btn btn-primary">智能分析</button>
-                </div>
-            </div>
-
-            <div class="example-queries">
-                <div class="example-query-title">
-                    <i class="fas fa-lightbulb"></i>
-                    查詢範例：
-                </div>
-                <div class="example-queries-container">
-                    <div class="example-query">我想要購買一台電競筆電，需要能夠玩新出的3A大作，有推薦的嗎?</div>
-                    <div class="example-query">我想找一個平板，預算有限，能做筆記就好</div>
-                    <div class="example-query">幫我比較不同品牌的藍芽耳機，想要買續航力好一點的</div>
-                </div>
-            </div>
-        </section>
-
-        <section id="result" class="result-section"></section>
-    </main>
-
-    <footer>
-        <div class="footer-container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3 class="footer-title">關於本系統</h3>
-                    <p class="footer-text">PChome 智能商品比較助手採用最新的檢索增強生成技術，為您提供客觀、專業的商品建議。</p>
-                </div>
-            </div>
-            <div class="footer-copyright">
-                &copy; 2025 PChome 智能商品比較助手
-            </div>
-        </div>
-    </footer>
-
-    <!-- 自定義 JavaScript -->
-    <script src="js/main.js"></script>
+    <script>
+        async function post_response() {
+            const question = document.getElementById('questionInput').value;
+            
+            if (!question.trim()) {
+                alert('請輸入問題');
+                return;
+            }
+            
+            document.getElementById('result').innerHTML = '處理中...';
+            
+            try {
+                const response = await fetch("/respone", {
+                    method: "POST",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({"content": question})
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('result').innerHTML = `錯誤: ${data.error}`;
+                } else {
+                    document.getElementById('result').innerHTML = data.respone;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `錯誤: ${error.message}`;
+            }
+        }
+    </script>
 </body>
 </html>

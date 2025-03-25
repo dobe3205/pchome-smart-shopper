@@ -73,8 +73,5 @@ async def respone(body=Body(None)):
 
 
 
-# 靜態文件服務
-app.mount("/css", StaticFiles(directory="static/css"), name="css")
-app.mount("/js", StaticFiles(directory="static/js"), name="js")
-app.mount("/img", StaticFiles(directory="static/img"), name="img")
+# 靜態文件
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
