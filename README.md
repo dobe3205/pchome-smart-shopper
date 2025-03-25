@@ -2,21 +2,6 @@
 
 一個使用 Retrieval-Augmented Generation (RAG) 技術的商品比較和推薦系統。系統可以根據用戶需求，通過網路搜尋不同產品的資訊，並生成產品比較分析和購買建議。
 
-
-
-##  RAG 處理流程
-
-1. **關鍵詞生成**: 分析用戶需求，生成優化的搜尋關鍵詞
-2. **資訊檢索**: 使用生成的關鍵詞通過 Google 搜尋獲取相關產品資訊
-3. **產品資訊提取**: 從搜尋結果中提取並結構化產品資訊
-4. **產品比較分析**: 根據用戶需求和結構化產品資訊生成全面的比較分析
-
-## 基於研究的提示詞工程
-
-- **Chain-of-Thought 方法**: 透過結構化思維流程提高比較分析的品質
-- **反思機制**: 系統會審視自己的分析過程，確保結果的全面性和客觀性
-- **情境化分析**: 針對特定使用場景提供更相關的產品推薦
-
 ## 安裝與配置
 
 ### 前置需求
@@ -29,13 +14,13 @@
 - 請至 [Google Programmable Search Engine](https://programmablesearchengine.google.com/controlpanel/create) 建立並獲取 CSE ID
 
 ### 環境設定
-1. 克隆專案或下載原始碼
+1. clone專案或下載原始碼
 2. 在 `/app/.env` 中設定您的 API 金鑰：
    ```
    gemini_api_key="YOUR_GEMINI_API_KEY" 
    google_search_api_key="YOUR_GOOGLE_SEARCH_API_KEY"
    google_cse_id ="YOUR_GOOGLE_CSE_ID"
-   model_name="gemini-2.0-flash"
+   model_name="gemini-1.5-flash"
    ```
 
 ## 運行方式
@@ -55,7 +40,7 @@ docker run -p 8000:8000 ragimage
 pip install -r requirements.txt
 
 # 運行網頁
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### 使用系統
