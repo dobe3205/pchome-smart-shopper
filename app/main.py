@@ -33,6 +33,7 @@ model_name = os.getenv("model_name")
 #CORS
 origins = [
     "http://localhost:4200",
+    "http://localhost:8000"
 ]
 app.add_middleware(
     CORSMiddleware, #CORS
@@ -43,8 +44,8 @@ app.add_middleware(
 )
 
 
-@app.post("/api/respone")
-async def respone(body=Body(None)):
+@app.post("/api/response")
+async def response(body=Body(None)):
     """
     處理用戶產品比較請求
     """
