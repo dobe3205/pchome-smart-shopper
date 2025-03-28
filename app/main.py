@@ -185,7 +185,8 @@ origins = [
     "http://localhost:4200",
     "http://localhost:800",
     "http://127.0.0.1:4200",
-    "http://127.0.0.1:800"
+    "http://127.0.0.1:800",
+    "http://127.0.0.1:8000"
 ]
 app.add_middleware(
     CORSMiddleware, #CORS
@@ -195,23 +196,7 @@ app.add_middleware(
     allow_headers=["*"],    #允許所有header
 )
 
-# 健康檢查端點
-@app.get("/health")
-async def health_check():
-    """健康檢查端點"""
-    return {"status": "ok", "message": "服務運行正常"}
 
-# 根路徑端點 - 確保有回應
-@app.get("/")
-async def root():
-    """根路徑端點"""
-    return {"message": "歡迎使用商品比較RAG系統 API"}
-
-# 添加一個選項請求處理 - 幫助處理 CORS 預檢請求
-@app.options("/{rest_of_path:path}")
-async def options_route(rest_of_path: str):
-    """處理所有 OPTIONS 請求，支援 CORS 預檢"""
-    return {}
 
 # 用戶創建模型
 class UserCreate(BaseModel):

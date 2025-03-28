@@ -21,6 +21,7 @@
    google_search_api_key="YOUR_GOOGLE_SEARCH_API_KEY"
    google_cse_id ="YOUR_GOOGLE_CSE_ID"
    model_name="gemini-1.5-flash"
+   secret_key="secret_key"
    ```
 
 ## 運行方式
