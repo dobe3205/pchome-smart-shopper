@@ -1,26 +1,27 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body,Depends,HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
+from contextlib import asynccontextmanager  # 用於建立 lifespan 上下文管理器
+import logging
 
-from package import rag
+from sqlmodel import SQLModel,Field,create_engine,Session,select
+from pydantic import BaseModel
 
+from jose import JWTError, jwt  # JWT處理
+from passlib.context import CryptContext  # 加密用
+
+from package import rag #RAG
+from datetime import datetime,timedelta
+from typing import Annotated
 import json
 import os
-import logging
 from dotenv import load_dotenv
+import jose
 
-# 設定日誌
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
-app = FastAPI(
-    title="商品比較RAG系統",
-    description="基於RAG的商品比較系統",
-    version="1.0.0"
-)
-
-# 載入 .env 檔案
+# 載入 .env 資料
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
@@ -29,6 +30,81 @@ gemini_api_key = os.getenv("gemini_api_key")
 google_search_api_key = os.getenv("google_search_api_key")
 google_cse_id = os.getenv("google_cse_id")
 model_name = os.getenv("model_name")
+
+
+# 設定日誌
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+#設定資料庫
+databas_name="database.db"
+database_path=f"sqlite:///{databas_name}"
+connect_args={"check_same_thread":False}
+engine=create_engine(database_path,connect_args=connect_args)
+
+#用戶資料
+class User(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)             
+    user_name: str = Field(index=True, unique=True)             
+    email: str = Field(index=True, unique=True, nullable=True)
+    hashed_password: str
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    last_login: datetime = Field(nullable=True)
+#問答紀錄
+class QueryRecord(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    query: str
+    response: str
+    created_at: datetime = Field(default_factory=datetime.now)
+
+def creat_db():
+    SQLModel.metadata.create_all(engine)
+
+#安全建立資料庫連接
+
+async def creat_session():
+    with Session(engine) as session:
+        yield session
+
+v_session=Annotated[Session,Depends(creat_session)]
+
+#開serve初始化DB
+@asynccontextmanager
+async def lifespan(app:FastAPI):
+    creat_db()
+    print("資料庫建立完成")
+    yield
+
+#安全性設定
+#加密方法
+pw_content=CryptContext(schemes="bcrypt",deprecated="auto") 
+
+#密碼加密
+def hash_password(password:str)->str:
+    return  pw_content.hash(password)
+
+#驗證密碼正確
+def verfiy_password(plain_password:str,hash_password:str):
+    return pw_content.verify(plain_password,hash_password)
+
+#驗證使用者登入
+def verfiy_user(session:v_session,user_name:str,password:str):
+    user=session.exec(select(User).where(User.user_name==user_name))
+    if not user or not verfiy_password(password,user.hashed_password):
+        return None
+    return user
+    
+
+
+    
+app = FastAPI(
+    title="商品比較RAG系統",
+    description="基於RAG的商品比較系統",
+    lifespan=lifespan
+)
+
 
 #CORS
 origins = [
@@ -85,6 +161,7 @@ async def response(body=Body(None)):
         error_response = {"error": f"處理請求時發生錯誤: {str(e)}"}
         return JSONResponse(content=error_response, status_code=500)
 
+#處理Gemini回應markdown
 def extract_json_from_response(response):
     if "```json" in response:
         parts = response.split("```json")
