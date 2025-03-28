@@ -8,9 +8,10 @@
 <body>
     <h1>商品比較問答系統</h1>
     
-    <form id="questionForm" onsubmit="return false;">
+    <form id="questionForm" onsubmit="return false;" method="get">
         <input type="text" id="questionInput" placeholder="請輸入您的問題...">
-        <button onclick="post_response()">送出問題</button>
+        <button type="submit" onclick="post_response()">送出問題</button>
+        
     </form>
     
     <div id="result">問答結果將顯示在這裡...</div>

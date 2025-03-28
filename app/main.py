@@ -258,6 +258,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 # 獲取當前用戶
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], session:v_session):
     """從token獲取當前用戶"""
+    #定義錯誤訊息
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="認證失敗",
@@ -305,9 +306,7 @@ async def get_user_history(
     """獲取用戶的問答歷史記錄"""
     
     # 查詢用戶的所有問答記錄，按創建時間降序排列
-    statement = select(QueryRecord).where(QueryRecord.user_id == current_user.id)\
-        .order_by(QueryRecord.created_at.desc())\
-        .offset(skip).limit(limit)
+    statement = select(QueryRecord).where(QueryRecord.user_id == current_user.id).order_by(QueryRecord.created_at.desc()).offset(skip).limit(limit)
     
     records = session.exec(statement).all()
     
