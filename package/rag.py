@@ -17,7 +17,7 @@ def create_search_keywords_prompt(user_query):
         融合提示詞的query
     """
     return f"""
-            我需要你擔任關鍵字生成專家，根據用戶的購物需求生成精確的搜尋關鍵字。請保持簡潔，每次只產生3到5個最相關的關鍵字，不需要任何解釋。
+            我需要你擔任關鍵字生成專家，根據用戶的購物需求生成精確的搜尋關鍵字。請保持簡潔，每次只產生1到5個最相關的關鍵字，不需要任何解釋。
             步驟1: 識別品牌 (如果有指定)
             品牌: [提取用戶提到的品牌，如ASUS、ACER、HP等]
 
@@ -34,6 +34,23 @@ def create_search_keywords_prompt(user_query):
             最終關鍵字: [品牌] [商品種類] [需求特徵] [規格參數]
 
             以下是範例：
+            提問:比較電競筆電
+            思考過程:
+            步驟1: 識別品牌
+            品牌: 未指定特定品牌
+
+            步驟2: 確定產品基本類別
+            商品種類: 筆電
+
+            步驟3: 分析關鍵需求特徵
+            需求特徵: 電競
+
+            步驟4: 提取關鍵規格參數
+            規格參數: 無
+
+            步驟5: 組合最終關鍵字
+            最終關鍵字: 電競 筆電
+
             提問: 我需要一台適合辦公室使用的電腦，預算15000元以內，主要是處理文書工作和瀏覽網頁。
             思考過程:
             步驟1: 識別品牌
@@ -166,17 +183,17 @@ def gemini_response(llm_input, model_api_key, model_name):
     model = genai.GenerativeModel(model_name=model_name)
     try:
         # 設置生成參數，提高輸出品質
-        """
+        
         generation_config = {
             "temperature": 0.2, #softmax中logit/t
             "top_p": 0.95,      #token機率總和
             "top_k": 40,        #前k個token
             "max_output_tokens": 4096   #輸出最多幾個token
         }
-        """
+        
         response = model.generate_content(
             llm_input,
-            #generation_config=generation_config    #如有需求再做設定
+            generation_config=generation_config    #如有需求再做設定
         )
         return response.text    #只取回應，其它暫且沒用到
     except Exception as e:
@@ -239,39 +256,41 @@ def final_comparison_prompt(user_query, retrival_info=None):
         最終的產品比較提示詞
     """
     spec={
-        "comparison_results": {
-            "best_choice": "Product Name",
-            "best_value": "Product Name",
-            "best_quality": "Product Name",
-            "most_features": "Product Name"
-        },
-        "product_comparisons": [
-            {
-                "product_name": "Product A",
-                "brand": "Brand Name",
-                "price": "Price",
-                "pros": ["Pro 1", "Pro 2", "..."],
-                "cons": ["Con 1", "Con 2", "..."],
-                "key_features": ["Feature 1", "Feature 2", "..."],
-                "suitable_scenarios": ["Scenario 1", "Scenario 2", "..."],
-                "rating": 8.5
+            "comparison_results": {
+                "best_choice": "最佳商品名稱",
+                "best_value": "最高性價比商品",
+                "best_quality": "最佳品質商品",
+                "most_features": "功能最齊全商品"
             },
-            {
-                "product_name": "Product B",
-                "brand": "Brand Name",
-                "price": "Price",
-                "pros": ["Pro 1", "Pro 2", "..."],
-                "cons": ["Con 1", "Con 2", "..."],
-                "key_features": ["Feature 1", "Feature 2", "..."],
-                "suitable_scenarios": ["Scenario 1", "Scenario 2", "..."],
-                "rating": 7.8
-            }
+            "product_comparisons": [
+                {
+                    "product_name": "商品名稱",
+                    "brand": "品牌名稱",
+                    "price": "價格",
+                    "pros": ["優點 1", "優點 2", "..."],
+                    "cons": ["缺點 1", "缺點 2", "..."],
+                    "key_features": ["特色 1", "特色 2", "..."],
+                    "suitable_scenarios": ["適用場景 1", "適用場景 2", "..."],
+                    "rating": 8.5,
+                    "link": "https://24h.pchome.com.tw/prod/DHAS93-A900IHAVI"
+                },
+                {
+                    "product_name": "商品名稱",
+                    "brand": "品牌名稱",
+                    "price": "價格",
+                    "pros": ["優點 1", "優點 2", "..."],
+                    "cons": ["缺點 1", "缺點 2", "..."],
+                    "key_features": ["特色 1", "特色 2", "..."],
+                    "suitable_scenarios": ["適用場景 1", "適用場景 2", "..."],
+                    "rating": 7.8,
+                    "link": "https://24h.pchome.com.tw/prod/DHAK8I-1900I18GG"
+                }
             ],
-        "analysis": "Overall comparison analysis and recommendations"
+            "analysis": "整體比較分析和建議"
         }
     # 創建比較產品的提示詞
     prompt = f"""
-    你是專業的產品顧問，專門幫助用戶做出最佳購買決策。請根據用戶需求和提供的產品資訊，進行全面的分析並以JSON格式回答結構如以下所示，回答請跟結構一模一樣，不用附加額外訊息，也不要使用markdown格式:
+    你是專業的產品顧問，專門幫助用戶做出最佳購買決策。請用繁體中文回答並根據用戶需求和提供的產品資訊，進行全面的分析並以JSON格式回答結構如以下所示，商品的部分不只兩個，只是舉例而已，如果有超過4種產品，請至少比較4種最相關的，並把參考的產品資料中的連結填入JSON結構，key使用對應的英文，內容使用繁體中文，不用附加額外訊息，也不要使用markdown格式:
     {spec}
 
     # 用戶需求
@@ -281,37 +300,27 @@ def final_comparison_prompt(user_query, retrival_info=None):
     {retrival_info}
 
     # 分析步驟
-    ## 步驟1: 需求分析
-    分析用戶的核心需求、優先考量因素和可能的使用場景。思考用戶可能沒有明確表達但重要的隱含需求。
+    身為產品分析師，我需要先了解每個產品的基本資訊。我將從以下產品資訊中提取：
+    產品名稱和品牌 價格 主要規格和特點 目標用途 PCHOME購買連結
 
-    ## 步驟2: 產品資訊整理
-    從提供的資料中識別相關產品，並整理關鍵產品資訊。確保資訊的完整性和準確性。
+    接著，我需要評估每個產品的優缺點：
+    優點：哪些特性特別出色？
+    缺點：有哪些明顯的不足？
+    關鍵特色：最與眾不同的功能是什麼？
+    適用場景：哪類用戶最適合使用此產品？
 
-    ## 步驟3: 建立比較框架
-    建立合適的比較框架，包括:
-    - 核心功能比較
-    - 性價比分析
-    - 使用體驗
-    - 適用場景
+    然後，我將依據以下標準評分(1-10分)：
+    整體品質 性價比 功能完整性 使用者體驗
 
-    # 輸出格式
-    請提供以下內容:
+    最後，我會判斷：
+    最佳整體選擇 最佳性價比選擇 最佳品質選擇 功能最齊全選擇 提供整體分析和建議
 
-    1. 比較找到的相關產品，列出品牌、型號、價格、規格以及購買連結
-
-    2. 產品優缺點分析 - 對每個產品的優點和缺點進行分析，特別關注用戶的需求
-
-    3. 個性化推薦
-    - 整體最佳選擇
-    - 最佳性價比選擇
-    - 特定用途的最佳選擇(如適用)
-    - 如果用戶有特殊需求，提供最符合這些需求的選擇
-
-    4. 購買建議與注意事項
-    - 購買時應考慮的重要因素
-    - 其他備選方案(如有)
-    - 未來發展趨勢考量(如適用)
-
+    在提交最終JSON前，請檢查：
+    是否已識別每個產品的主要優缺點？
+    評分是否反映了產品的實際優劣(1-10分制)?
+    最佳選擇是否有充分依據？
+    JSON格式是否完全符合要求？
+    是否包含了有用的整體分析？
     讓分析結果清晰易讀，保持客觀專業的語調，不要在回應中提及你參考了哪些資料，也不要說你的資訊不足，也不要回應不相關的產品。
     """
     return prompt

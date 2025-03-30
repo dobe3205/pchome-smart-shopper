@@ -182,11 +182,7 @@ app = FastAPI(
 
 #CORS
 origins = [
-    "http://localhost:4200",
-    "http://localhost:800",
-    "http://127.0.0.1:4200",
-    "http://127.0.0.1:800",
-    "http://127.0.0.1:8000"
+    "http://localhost:4200"
 ]
 app.add_middleware(
     CORSMiddleware, #CORS
@@ -203,6 +199,8 @@ class UserCreate(BaseModel):
     user_name: str
     email: str
     password: str
+
+
 
 # 用戶註冊路由
 @app.post("/api/register", response_model=UserResponse)
@@ -450,4 +448,4 @@ async def response(
 
 
 # 靜態文件
-app.mount("/static", StaticFiles(directory="static"), name="static")
+#app.mount("/static", StaticFiles(directory="static"), name="static")
