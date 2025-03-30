@@ -272,7 +272,7 @@ def final_comparison_prompt(user_query, retrival_info=None):
                     "key_features": ["特色 1", "特色 2", "..."],
                     "suitable_scenarios": ["適用場景 1", "適用場景 2", "..."],
                     "rating": 8.5,
-                    "link": "https://24h.pchome.com.tw/prod/DHAS93-A900IHAVI"
+                    "link": "https://24h.pchome.com.tw/prod/xxxxxx(請從參考資料取得)"
                 },
                 {
                     "product_name": "商品名稱",
@@ -283,7 +283,7 @@ def final_comparison_prompt(user_query, retrival_info=None):
                     "key_features": ["特色 1", "特色 2", "..."],
                     "suitable_scenarios": ["適用場景 1", "適用場景 2", "..."],
                     "rating": 7.8,
-                    "link": "https://24h.pchome.com.tw/prod/DHAK8I-1900I18GG"
+                    "link": "https://24h.pchome.com.tw/prod/xxxxxx(請從參考資料取得)"
                 }
             ],
             "analysis": "整體比較分析和建議"
@@ -316,12 +316,15 @@ def final_comparison_prompt(user_query, retrival_info=None):
     最佳整體選擇 最佳性價比選擇 最佳品質選擇 功能最齊全選擇 提供整體分析和建議
 
     在提交最終JSON前，請檢查：
+    從每個相關產品中提取重要資訊，包括購買連結(link)
     是否已識別每個產品的主要優缺點？
     評分是否反映了產品的實際優劣(1-10分制)?
     最佳選擇是否有充分依據？
     JSON格式是否完全符合要求？
     是否包含了有用的整體分析？
     讓分析結果清晰易讀，保持客觀專業的語調，不要在回應中提及你參考了哪些資料，也不要說你的資訊不足，也不要回應不相關的產品。
+
+ 
     """
     return prompt
 
@@ -405,7 +408,7 @@ def get_pchome_product_info(url):
            f"商品名稱: {product_name}",
            f"品牌: {brand}",
            f"售價: {price}",
-           f"購買連結:{url}"
+           f"購買連結: {url}"
        ]
        
        if original_price:

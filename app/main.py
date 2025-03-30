@@ -382,7 +382,7 @@ async def delete_record(
     
     return {"message": "記錄刪除成功"}
 
-@app.post("/api/response")
+@app.post("/api/search")
 async def response(
     body=Body(None), 
     current_user: Annotated[User, Depends(get_current_active_user)] = None, 
