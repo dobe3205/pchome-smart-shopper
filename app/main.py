@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
-from contextlib import asynccontextmanager  # 用於建立 lifespan 上下文管理器
+from contextlib import asynccontextmanager  # 用於建立 lifespan 
 import logging
 
 from sqlmodel import SQLModel,Field,create_engine,Session,select
@@ -410,7 +410,7 @@ async def response(
         
         # step2: 執行google搜尋取得產品資訊
         logger.info("step2: 執行google搜尋取得產品資訊")
-        search_results = rag.google_search(search_keywords, google_search_api_key, google_cse_id, num_results=10)
+        search_results = rag.google_search(search_keywords, google_search_api_key, google_cse_id, num_results=20)
         
         # step3: step3: 整理pchome產品資訊
         logger.info("step3: 整理pchome產品資訊")
