@@ -422,7 +422,14 @@ async def response(
         final_response = rag.gemini_response(final_prompt, gemini_api_key, model_name)
         
         # 解析回應
-        response_json = extract_json_from_response(final_response)
+        response_json_str = extract_json_from_response(final_response)
+        
+        # 將字串解析為Python字典
+        if response_json_str:
+            response_json = json.loads(response_json_str)
+        else:
+            # 如果無法提取JSON，則使用完整回應
+            response_json = {"response": final_response}
         
         # 儲存問答記錄
         query_record = QueryRecord(
@@ -434,7 +441,7 @@ async def response(
         session.commit()
         session.refresh(query_record)
         
-        return JSONResponse(response_json)
+        return JSONResponse(content=response_json)
         
     except Exception as e:
         logger.error(f"處理請求時發生錯誤: {str(e)}")
