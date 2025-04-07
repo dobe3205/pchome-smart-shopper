@@ -5,20 +5,19 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
 from contextlib import asynccontextmanager  # 用於建立 lifespan 
 import logging
-
 from sqlmodel import SQLModel,Field,create_engine,Session,select
 from pydantic import BaseModel
-
 from jose import JWTError, jwt  # JWT處理
 from passlib.context import CryptContext  # 加密用
-
-from package import rag #RAG
+from package.rag import RAGService  
 from datetime import datetime,timedelta
-from typing import Annotated,Optional,Dict
+from typing import Annotated,Optional,Dict,List,Set
 import json
 import os
 from dotenv import load_dotenv
 import jose
+from uuid import uuid4
+
 
 
 # 載入 .env 資料
@@ -31,9 +30,17 @@ google_search_api_key = os.getenv("google_search_api_key")
 google_cse_id = os.getenv("google_cse_id")
 model_name = os.getenv("model_name")
 
+# 初始化 RAG 服務
+rag_service = RAGService(
+    gemini_api_key=gemini_api_key,
+    google_search_api_key=google_search_api_key,
+    google_cse_id=google_cse_id,
+    model_name=model_name
+)
+
 #設定JWT參數
 SECRET_KEY=os.getenv("secret_key")
-ALGORITHM = "HS256"  # 常用方法 HS256, HS384, HS512, RS256
+ALGORITHM = "HS256"  
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # 設定日誌
@@ -41,7 +48,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 #設定資料庫
-databas_name="database.db"
+databas_name="/code/database.db"
 database_path=f"sqlite:///{databas_name}"
 connect_args={"check_same_thread":False}
 engine=create_engine(database_path,connect_args=connect_args)
@@ -64,6 +71,41 @@ class QueryRecord(SQLModel, table=True):
     response: str
     created_at: datetime = Field(default_factory=datetime.now)
 
+#回應模型
+class UserResponse(BaseModel):
+    id: int
+    user_name: str
+    email: str
+    is_active: bool
+    created_at: datetime
+
+# 用戶創建模型
+class UserCreate(BaseModel):
+    user_name: str
+    email: str
+    password: str
+
+# 問答形式回應模型
+class QueryRecordResponse(BaseModel):
+    id: int
+    user_id: int
+    query: str
+    response: str
+    created_at: datetime
+
+# 多筆問答記錄回應模型
+class QueryHistoryResponse(BaseModel):
+    records: list[QueryRecordResponse]
+    total: int
+
+#給前端用
+class token(BaseModel):
+    access_token:str
+    token_type:str
+
+#驗證用戶用
+class TokenData(BaseModel):
+    username: Optional[str] = None
 def creat_db():
     SQLModel.metadata.create_all(engine)
 
@@ -99,7 +141,22 @@ def verfiy_user(session:v_session,user_name:str,password:str):
     if not user or not verfiy_password(password,user.hashed_password):
         return None
     return user
-    
+
+token_blacklist: Dict[str, datetime] = {}
+
+# 定期清理黑名單中已過期的token
+def clean_token_blacklist():
+    """清理黑名單中已過期的token"""
+    global token_blacklist
+    current_time = datetime.now()
+    token_blacklist = {jti: exp_time for jti, exp_time in token_blacklist.items() if exp_time > current_time}
+
+# 檢查token是否在黑名單中
+def is_token_blacklisted(jti: str) -> bool:
+    """檢查token是否在黑名單中"""
+    clean_token_blacklist()
+    return jti in token_blacklist
+
 #產生JWT
 def create_access_token(user_id: int, user_name: str, expires_delta: Optional[timedelta] = None):
     """
@@ -114,11 +171,13 @@ def create_access_token(user_id: int, user_name: str, expires_delta: Optional[ti
         JWT
     """
     # 建立payload資料
+    jti = str(uuid4())  # 生成唯一的 JWT ID
     payload = {
         "sub": user_name,  # subject (主題) - 標識用戶的唯一值
         "id": user_id,     # 用戶ID，方便後續查詢
         "type": "access_token",  # token類型
         "iat": datetime.now(),  # issued at (簽發時間)
+        "jti": jti,      # JWT ID，用於唯一標識這個token以進行登出
     }
     
     # 設置過期時間
@@ -131,44 +190,8 @@ def create_access_token(user_id: int, user_name: str, expires_delta: Optional[ti
     
     # 生成JWT
     encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return encoded_jwt, jti, expire
 
-#回應模型
-class UserResponse(BaseModel):
-    id: int
-    user_name: str
-    email: str
-    is_active: bool
-    created_at: datetime
-
-# 問答形式回應模型
-class QueryRecordResponse(BaseModel):
-    id: int
-    user_id: int
-    query: str
-    response: str
-    created_at: datetime
-
-# 多筆問答記錄回應模型
-class QueryHistoryResponse(BaseModel):
-    records: list[QueryRecordResponse]
-    total: int
-
-#給前端用
-class token(BaseModel):
-    access_token:str
-    token_type:str
-
-#驗證用戶用
-class TokenData(BaseModel):
-    username: Optional[str] = None
-
-#處理Gemini回應markdown
-def extract_json_from_response(response):
-    if "```json" in response:
-        parts = response.split("```json")
-        json_part = parts[1].split("```")[0].strip()
-        return json_part
 
 #OAuth2 token
 oauth2_scheme=OAuth2PasswordBearer(tokenUrl="/api/token")
@@ -182,8 +205,14 @@ app = FastAPI(
 
 #CORS
 origins = [
-    "http://localhost:4200"
+    "http://localhost:4200",
+    "http://localhost",
+    "http://localhost:80",
+    "http://frontend:80",
+    "http://0.0.0.0:8000",
+    "http://0.0.0.0:80"
 ]
+
 app.add_middleware(
     CORSMiddleware, #CORS
     allow_origins=origins,  #允許的url
@@ -193,16 +222,7 @@ app.add_middleware(
 )
 
 
-
-# 用戶創建模型
-class UserCreate(BaseModel):
-    user_name: str
-    email: str
-    password: str
-
-
-
-# 用戶註冊路由
+# 用戶註冊
 @app.post("/api/register", response_model=UserResponse)
 def register_user(user: UserCreate, session: v_session):
     """註冊新用戶"""
@@ -231,7 +251,7 @@ def register_user(user: UserCreate, session: v_session):
     session.refresh(db_user)
     return db_user
 
-# 登入路由
+# 登入
 @app.post("/api/token", response_model=token)
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],session:v_session):
     """登入並獲取token"""
@@ -246,11 +266,10 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     
     # 建立token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
+    access_token, _, _ = create_access_token(
         user_id=user.id, user_name=user.user_name, expires_delta=access_token_expires
     )
-    
-    # 回傳token
+
     return {"access_token": access_token, "token_type": "bearer"}
 
 # 獲取當前用戶
@@ -267,8 +286,19 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], sessio
         # 解碼token
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        if username is None:
+        jti: str = payload.get("jti")
+        
+        if username is None or jti is None:
             raise credentials_exception
+        
+        # 檢查token是否在黑名單中
+        if is_token_blacklisted(jti):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="token已登出",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+            
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
@@ -293,6 +323,37 @@ async def read_users_me(current_user: Annotated[User, Depends(get_current_active
     """獲取當前登入用戶資訊"""
     return current_user
 
+# 登出 API
+@app.post("/api/logout")
+async def logout(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    current_user: Annotated[User, Depends(get_current_active_user)]
+):
+    """用戶登出，使其當前token失效"""
+    try:
+        # 解碼token以獲取 JWT ID 和過期時間
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        jti = payload.get("jti")
+        exp = payload.get("exp")
+        
+        if not jti or not exp:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="無法處理token"
+            )
+        
+        # 將token加入黑名單
+        exp_datetime = datetime.fromtimestamp(exp)
+        token_blacklist[jti] = exp_datetime
+        
+        return {"message": "登出成功"}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"登出錯誤: {str(e)}"
+        )
+
 # 獲取用戶的問答歷史記錄
 @app.get("/api/history", response_model=QueryHistoryResponse)
 async def get_user_history(
@@ -303,7 +364,6 @@ async def get_user_history(
 ):
     """獲取用戶的問答歷史記錄"""
     
-    # 查詢用戶的所有問答記錄，按創建時間降序排列
     statement = select(QueryRecord).where(QueryRecord.user_id == current_user.id).order_by(QueryRecord.created_at.desc()).offset(skip).limit(limit)
     
     records = session.exec(statement).all()
@@ -400,52 +460,23 @@ async def response(
             user_query = json.loads(body)["content"]
         logger.info(f"收到用戶查詢: {user_query}")
         
-        # step1: LLM生成搜尋關鍵詞
-        logger.info("step1: LLM生成搜尋關鍵詞")
-        keywords_prompt = rag.create_search_keywords_prompt(user_query) #得到關鍵字
-        search_keywords = rag.gemini_response(keywords_prompt, gemini_api_key, model_name)
-        logger.info(f"生成的搜尋關鍵詞: {search_keywords}")
+        # RAG
+        original_response, response_json = rag_service.process_product_comparison(user_query)
         
-        # step2: 執行google搜尋取得產品資訊
-        logger.info("step2: 執行google搜尋取得產品資訊")
-        search_results = rag.google_search(search_keywords, google_search_api_key, google_cse_id, num_results=20)
-        
-        # step3: step3: 整理pchome產品資訊
-        logger.info("step3: 整理pchome產品資訊")
-        retrival_info = rag.pchome_search(search_results)
-        
-        # step4: 生成產品比較和分析
-        logger.info("step4: 生成產品比較和分析")
-        final_prompt = rag.final_comparison_prompt(user_query,retrival_info)
-        final_response = rag.gemini_response(final_prompt, gemini_api_key, model_name)
-        
-        # 解析回應
-        response_json_str = extract_json_from_response(final_response)
-        
-        # 將字串解析為Python字典
-        if response_json_str:
-            response_json = json.loads(response_json_str)
-        else:
-            # 如果無法提取JSON，則使用完整回應
-            response_json = {"response": final_response}
-        
-        # 儲存問答記錄
+        # 儲存問答記錄到資料庫
         query_record = QueryRecord(
             user_id=current_user.id,
             query=user_query,
-            response=final_response
+            response=original_response
         )
         session.add(query_record)
         session.commit()
         session.refresh(query_record)
         
+        # 回傳 JSON 結果
         return JSONResponse(content=response_json)
         
     except Exception as e:
         logger.error(f"處理請求時發生錯誤: {str(e)}")
         error_response = {"error": f"處理請求時發生錯誤: {str(e)}"}
         return JSONResponse(content=error_response, status_code=500)
-
-
-# 靜態文件
-#app.mount("/static", StaticFiles(directory="static"), name="static")

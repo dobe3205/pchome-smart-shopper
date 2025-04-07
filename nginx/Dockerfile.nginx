@@ -1,0 +1,16 @@
+FROM nginx:alpine
+
+# 複製配置檔案
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# 確保清除預設歡迎頁面
+RUN rm -f /usr/share/nginx/html/index.html /usr/share/nginx/html/*.html 2>/dev/null || true
+
+# 創建簡單的測試頁面
+RUN echo "<!DOCTYPE html><html><head><title>Frontend Proxy</title></head><body><h1>Frontend Proxy Works</h1><p>This is a test page. If you see this, Nginx proxy is working properly, but the connection to the frontend container may have issues.</p></body></html>" > /usr/share/nginx/html/test.html
+
+# 暴露 80 連接埠
+EXPOSE 80
+
+# 啟動 Nginx
+CMD ["nginx", "-g", "daemon off;"]

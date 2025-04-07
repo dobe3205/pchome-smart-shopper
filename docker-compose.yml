@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Angular 
+  frontend:
+    build:
+      context: ./frontend 
+      dockerfile: Dockerfile.frontend
+    container_name: angular-frontend
+    restart: always
+    ports:
+      - "4200:80"  
+    depends_on:
+      - backend
+
+  # FastAPI 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile  
+    container_name: fastapi-backend
+    restart: always
+    env_file:
+      - ./backend/app/.env
+    volumes:
+      # 先使用絕對路徑
+      #- ./database.db:/code/database.db
+      - db-data:/code
+    ports:
+      - "8000:8000"  
+
+  # Nginx 
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.nginx
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  db-data:

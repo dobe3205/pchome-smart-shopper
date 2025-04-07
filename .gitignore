@@ -1,4 +1,4 @@
 # 環境變數檔案
 .env
 */\.env
-app/.env
+backend/app/.env
