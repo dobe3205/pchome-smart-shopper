@@ -1,0 +1,40 @@
+# 使用穩定版本的 Node.js
+FROM node:20 as build
+
+# 設定工作目錄
+WORKDIR /app
+
+# 複製 package.json
+COPY package*.json ./
+
+# 安裝相依套件
+RUN npm install
+
+# 複製專案檔案
+COPY . .
+
+# 進行構建
+RUN npm run build
+
+# 次要階段，使用 Nginx 進行部署
+FROM nginx:alpine
+
+# 清除預設歡迎頁面
+RUN rm -rf /usr/share/nginx/html/*
+
+# 複製構建結果到 Nginx 目錄，SSR 結構下的 browser 資料夾包含實際應用
+COPY --from=build /app/dist/ngtest/browser /usr/share/nginx/html
+
+# 確保 index.html 存在
+RUN if [ ! -f /usr/share/nginx/html/index.html ]; then \
+    echo "<!DOCTYPE html><html><head><title>Angular App</title></head><body><h1>Angular Frontend Container</h1><p>If you see this page, the frontend container is working, but the Angular app may not have built correctly.</p></body></html>" > /usr/share/nginx/html/index.html; \
+    fi
+
+# 自訂Nginx配置
+RUN rm -f /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+# 啟動 Nginx
+CMD ["nginx", "-g", "daemon off;"]

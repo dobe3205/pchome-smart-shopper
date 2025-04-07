@@ -1,0 +1,182 @@
+<div class="container">
+  <h1 class="page-title">查詢歷史記錄</h1>
+  
+  <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+  
+  <div class="loading-container" *ngIf="isLoading && queryHistory.length === 0">
+    <app-loading-spinner [message]="'載入查詢記錄中...'" [size]="40"></app-loading-spinner>
+  </div>
+  
+  <div class="no-records" *ngIf="!isLoading && queryHistory.length === 0">
+    <p>您尚未進行任何商品比較查詢。</p>
+    <a routerLink="/product-comparison" class="start-query-btn">開始您的第一次查詢</a>
+  </div>
+  
+  <div class="history-container" *ngIf="queryHistory.length > 0">
+    <div class="history-sidebar">
+      <h3 class="sidebar-title">您的查詢記錄</h3>
+      <ul class="query-list">
+        <li 
+          *ngFor="let query of queryHistory" 
+          [class.active]="selectedQuery && selectedQuery.id === query.id"
+          (click)="viewQueryDetails(query)" 
+          class="query-item"
+        >
+          <div class="query-content">
+            <div class="query-text">{{ truncateText(query.query) }}</div>
+            <div class="query-date">{{ formatDate(query.created_at) }}</div>
+          </div>
+          <button 
+            class="delete-btn" 
+            (click)="deleteQuery($event, query.id)" 
+            title="刪除記錄"
+          >
+            ✕
+          </button>
+        </li>
+      </ul>
+      
+      <!-- 分頁控制 -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button 
+          class="page-btn" 
+          [disabled]="currentPage === 0" 
+          (click)="changePage(currentPage - 1)"
+        >
+          上一頁
+        </button>
+        <span class="page-info">{{ currentPage + 1 }} / {{ totalPages }}</span>
+        <button 
+          class="page-btn" 
+          [disabled]="currentPage === totalPages - 1" 
+          (click)="changePage(currentPage + 1)"
+        >
+          下一頁
+        </button>
+      </div>
+    </div>
+    
+    <div class="history-details" *ngIf="selectedQuery">
+      <div class="query-details">
+        <h3>查詢內容</h3>
+        <div class="query-full-text">{{ selectedQuery.query }}</div>
+        <div class="query-time">
+          <span>查詢時間：{{ formatDate(selectedQuery.created_at) }}</span>
+        </div>
+      </div>
+      
+      <div class="response-details" *ngIf="parsedResponse">
+        <h3>商品比較結果</h3>
+
+        <!-- 最佳選擇概要 -->
+        <div class="comparison-summary">
+          <div class="summary-card">
+            <h4>整體最佳選擇</h4>
+            <p>{{ parsedResponse.comparison_results.best_choice }}</p>
+          </div>
+          <div class="summary-card">
+            <h4>最佳性價比</h4>
+            <p>{{ parsedResponse.comparison_results.best_value }}</p>
+          </div>
+          <div class="summary-card">
+            <h4>最佳品質</h4>
+            <p>{{ parsedResponse.comparison_results.best_quality }}</p>
+          </div>
+          <div class="summary-card">
+            <h4>功能最豐富</h4>
+            <p>{{ parsedResponse.comparison_results.most_features }}</p>
+          </div>
+        </div>
+        
+        <!-- 詳細商品比較 (橫向表格) -->
+        <div class="product-comparison">
+          <h4>商品詳細比較</h4>
+          
+          <div class="table-responsive">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th class="feature-col">特性</th>
+                  <th class="product-col" *ngFor="let product of parsedResponse.product_comparisons">
+                    <div class="product-header">
+                      <div class="product-name">{{ product.product_name }}</div>
+                      <span class="product-rating">{{ product.rating }}</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="feature-col">品牌</td>
+                  <td *ngFor="let product of parsedResponse.product_comparisons">
+                    {{ product.brand }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="feature-col">價格</td>
+                  <td *ngFor="let product of parsedResponse.product_comparisons">
+                    {{ product.price }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="feature-col">購買連結</td>
+                  <td *ngFor="let product of parsedResponse.product_comparisons">
+                    <a *ngIf="product.link" [href]="product.link" target="_blank" class="buy-link">前往購買</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="feature-col">優點</td>
+                  <td *ngFor="let product of parsedResponse.product_comparisons">
+                    <ul class="pros">
+                      <li *ngFor="let pro of product.pros">{{ pro }}</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="feature-col">缺點</td>
+                  <td *ngFor="let product of parsedResponse.product_comparisons">
+                    <ul class="cons">
+                      <li *ngFor="let con of product.cons">{{ con }}</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="feature-col">主要特色</td>
+                  <td *ngFor="let product of parsedResponse.product_comparisons">
+                    <ul class="features">
+                      <li *ngFor="let feature of product.key_features">{{ feature }}</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="feature-col">適用場景</td>
+                  <td *ngFor="let product of parsedResponse.product_comparisons">
+                    <div class="scenarios">
+                      <span class="scenario-tag" *ngFor="let scenario of product.suitable_scenarios">
+                        {{ scenario }}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- 分析總結 -->
+        <div class="analysis-summary">
+          <h4>分析總結</h4>
+          <p>{{ parsedResponse.analysis }}</p>
+        </div>
+      </div>
+      
+      <div class="no-parsed-response" *ngIf="!parsedResponse">
+        <p>無法解析此查詢回應的詳細資訊。這可能是因為回應格式不符合預期。</p>
+      </div>
+      
+      <div class="actions">
+        <a routerLink="/product-comparison" class="new-query-btn">進行新的查詢</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,81 @@
+<div class="register-container">
+  <div class="register-card">
+    <h2>商品比較助手 - 註冊</h2>
+    
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+    
+    <div class="form-group">
+      <label for="username">用戶名</label>
+      <input 
+        type="text" 
+        id="username"
+        name="username"
+        [(ngModel)]="user.user_name"
+        placeholder="請輸入用戶名"
+        required
+        [disabled]="isLoading"
+      >
+    </div>
+    
+    <div class="form-group">
+      <label for="email">電子郵件</label>
+      <input 
+        type="email" 
+        id="email"
+        name="email"
+        [(ngModel)]="user.email"
+        placeholder="請輸入電子郵件"
+        required
+        [disabled]="isLoading"
+      >
+    </div>
+    
+    <div class="form-group">
+      <label for="password">密碼</label>
+      <input 
+        type="password" 
+        id="password"
+        name="password"
+        [(ngModel)]="user.password"
+        placeholder="請輸入密碼"
+        required
+        [disabled]="isLoading"
+      >
+    </div>
+    
+    <div class="form-group">
+      <label for="confirmPassword">確認密碼</label>
+      <input 
+        type="password" 
+        id="confirmPassword"
+        name="confirmPassword"
+        [(ngModel)]="confirmPassword"
+        placeholder="請再次輸入密碼"
+        required
+        [disabled]="isLoading"
+      >
+    </div>
+    
+    <div class="form-actions">
+      <button 
+        (click)="register()" 
+        [disabled]="isLoading || submitting"
+        class="register-button"
+      >
+        <span *ngIf="isLoading" class="loading-icon"></span>
+        {{ isLoading ? '註冊處理中...' : '註冊' }}
+      </button>
+    </div>
+    
+    <div class="login-link">
+      已有帳號？
+      <a (click)="navigateToLogin()" [class.disabled]="isLoading">立即登入</a>
+    </div>
+    
+    <div class="status-message" *ngIf="submitting && !errorMessage">
+      正在與伺服器連接，請稍候...
+    </div>
+  </div>
+</div>

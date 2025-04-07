@@ -1,0 +1,133 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #f8f9fa;
+}
+
+.register-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  width: 100%;
+  max-width: 450px;
+}
+
+h2 {
+  color: #1a73e8;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #5f6368;
+}
+
+input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+  outline: none;
+}
+
+input:disabled {
+  background-color: #f1f3f4;
+  cursor: not-allowed;
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+}
+
+.register-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.register-button:hover:not(:disabled) {
+  background-color: #1669d4;
+}
+
+.register-button:disabled {
+  background-color: #a8c7fa;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: #fce8e6;
+  color: #d93025;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #5f6368;
+}
+
+.login-link a {
+  color: #1a73e8;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.login-link a:hover:not(.disabled) {
+  text-decoration: underline;
+}
+
+.login-link a.disabled {
+  color: #a8c7fa;
+  cursor: not-allowed;
+}
+
+.status-message {
+  margin-top: 1rem;
+  text-align: center;
+  color: #5f6368;
+  padding: 0.75rem;
+  background-color: #e8f0fe;
+  border-radius: 4px;
+}
+
+.loading-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

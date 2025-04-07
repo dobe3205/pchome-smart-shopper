@@ -1,0 +1,78 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>商品比較助手 - 登入</h2>
+    
+    <!-- 檢查後端連接狀態 -->
+    <div class="backend-status" *ngIf="checkingBackend">
+      <div class="loading-spinner"></div>
+      <span>正在檢查後端連接...</span>
+      <button class="skip-button" (click)="skipCheck()">跳過檢查</button>
+    </div>
+    
+    <!-- 後端不可用警告 -->
+    <div class="backend-error" *ngIf="!isBackendAvailable && !checkingBackend">
+      <p>
+        <strong>無法連接到後端服務</strong><br>
+        請確保後端服務已啟動並在 http://localhost:8000 運行。
+      </p>
+      <div class="action-buttons">
+        <button class="retry-button" (click)="retryConnection()">重試連接</button>
+        <button class="skip-button" (click)="skipCheck()">忽略並繼續</button>
+      </div>
+    </div>
+    
+    <!-- 成功訊息 -->
+    <div class="success-message" *ngIf="successMessage && isBackendAvailable">
+      {{ successMessage }}
+    </div>
+    
+    <!-- 錯誤訊息 -->
+    <div class="error-message" *ngIf="errorMessage && isBackendAvailable">
+      {{ errorMessage }}
+    </div>
+    
+    <div class="form-group" *ngIf="isBackendAvailable">
+      <label for="username">用戶名</label>
+      <input 
+        type="text" 
+        id="username"
+        name="username"
+        [(ngModel)]="username"
+        placeholder="請輸入用戶名"
+        required
+        (focus)="clearMessages()"
+        [disabled]="isLoading"
+      >
+    </div>
+    
+    <div class="form-group" *ngIf="isBackendAvailable">
+      <label for="password">密碼</label>
+      <input 
+        type="password" 
+        id="password"
+        name="password"
+        [(ngModel)]="password"
+        placeholder="請輸入密碼"
+        required
+        (focus)="clearMessages()"
+        [disabled]="isLoading"
+      >
+    </div>
+    
+    <div class="form-actions" *ngIf="isBackendAvailable">
+      <button 
+        (click)="login()" 
+        [disabled]="isLoading"
+        class="login-button"
+      >
+        <span *ngIf="isLoading" class="loading-icon"></span>
+        {{ isLoading ? '登入中...' : '登入' }}
+      </button>
+    </div>
+    
+    <div class="register-link" *ngIf="isBackendAvailable">
+      還沒有帳號？
+      <a (click)="navigateToRegister()" [class.disabled]="isLoading">註冊新帳號</a>
+    </div>
+  </div>
+</div>

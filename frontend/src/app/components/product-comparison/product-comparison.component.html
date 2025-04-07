@@ -1,0 +1,149 @@
+<div class="container">
+  <h1 class="page-title">智能商品比較助手</h1>
+  <p class="page-description">
+    輸入您的需求，我們會為您找到最適合的商品並進行詳細比較。
+  </p>
+
+  <div class="query-form">
+    <div class="input-group">
+      <textarea 
+        [(ngModel)]="query" 
+        placeholder="請描述您想比較的商品，例如：推薦一款5000元以內、電池續航力強的無線耳機" 
+        rows="3" 
+        class="query-input"
+      ></textarea>
+      <button (click)="submitQuery()" class="submit-btn" [disabled]="isLoading">
+        <span *ngIf="!isLoading">搜尋比較</span>
+        <span *ngIf="isLoading">處理中...</span>
+      </button>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+  </div>
+
+  <!-- 範例查詢 -->
+  <div class="query-examples" *ngIf="showExamples && !comparisonResults">
+    <h3>範例查詢：</h3>
+    <div class="examples-list">
+      <div class="example-item" *ngFor="let example of queryExamples">
+        <button (click)="useExample(example)" class="example-btn">{{ example }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 載入指示器 -->
+  <div class="loading-container" *ngIf="isLoading">
+    <app-loading-spinner [message]="'正在為您搜尋並比較商品，這可能需要一點時間...'" [size]="40"></app-loading-spinner>
+  </div>
+
+  <!-- 商品比較結果 -->
+  <div class="comparison-results" *ngIf="comparisonResults && !isLoading">
+    <div class="results-header">
+      <h2>商品比較結果</h2>
+      <button class="reset-btn" (click)="resetComparison()">重新查詢</button>
+    </div>
+
+    <!-- 最佳選擇概要 -->
+    <div class="comparison-summary">
+      <div class="summary-card">
+        <h3>整體最佳選擇</h3>
+        <p>{{ comparisonResults.comparison_results.best_choice }}</p>
+      </div>
+      <div class="summary-card">
+        <h3>最佳性價比</h3>
+        <p>{{ comparisonResults.comparison_results.best_value }}</p>
+      </div>
+      <div class="summary-card">
+        <h3>最佳品質</h3>
+        <p>{{ comparisonResults.comparison_results.best_quality }}</p>
+      </div>
+      <div class="summary-card">
+        <h3>功能最豐富</h3>
+        <p>{{ comparisonResults.comparison_results.most_features }}</p>
+      </div>
+    </div>
+
+    <!-- 詳細商品比較 (橫向表格) -->
+    <div class="product-comparison">
+      <h3>商品詳細比較</h3>
+      
+      <div class="table-responsive">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th class="feature-col">商品名稱</th>
+              <th class="product-col" *ngFor="let product of comparisonResults.product_comparisons">
+                <div class="product-full-name">{{ product.product_name }}</div>
+                <div class="rating-container">
+                  <span class="product-rating">{{ product.rating }}</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="feature-col">品牌</td>
+              <td *ngFor="let product of comparisonResults.product_comparisons">
+                {{ product.brand }}
+              </td>
+            </tr>
+            <tr>
+              <td class="feature-col">價格</td>
+              <td *ngFor="let product of comparisonResults.product_comparisons">
+                {{ product.price }}
+              </td>
+            </tr>
+            <tr>
+              <td class="feature-col">購買連結</td>
+              <td *ngFor="let product of comparisonResults.product_comparisons">
+                <a *ngIf="product.link" [href]="product.link" target="_blank" class="buy-link">前往購買</a>
+              </td>
+            </tr>
+            <tr>
+              <td class="feature-col">優點</td>
+              <td *ngFor="let product of comparisonResults.product_comparisons">
+                <ul class="pros">
+                  <li *ngFor="let pro of product.pros">{{ pro }}</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="feature-col">缺點</td>
+              <td *ngFor="let product of comparisonResults.product_comparisons">
+                <ul class="cons">
+                  <li *ngFor="let con of product.cons">{{ con }}</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="feature-col">主要特色</td>
+              <td *ngFor="let product of comparisonResults.product_comparisons">
+                <ul class="features">
+                  <li *ngFor="let feature of product.key_features">{{ feature }}</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td class="feature-col">適用場景</td>
+              <td *ngFor="let product of comparisonResults.product_comparisons">
+                <div class="scenarios">
+                  <span class="scenario-tag" *ngFor="let scenario of product.suitable_scenarios">
+                    {{ scenario }}
+                  </span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 分析總結 -->
+    <div class="analysis-summary">
+      <h3>比較分析</h3>
+      <p>{{ comparisonResults.analysis }}</p>
+    </div>
+  </div>
+</div>

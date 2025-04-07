@@ -1,0 +1,46 @@
+<header class="header">
+  <div class="container">
+    <div class="logo">
+      <a routerLink="/">PChome 智能商品比較</a>
+    </div>
+    <nav class="nav">
+      <ul class="nav-list" *ngIf="currentUser">
+        <li class="nav-item">
+          <a routerLink="/product-comparison" routerLinkActive="active">商品比較</a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/history" routerLinkActive="active">查詢歷史</a>
+        </li>
+        <li class="nav-item user-menu">
+          <div class="user-info">
+            <span class="user-avatar">{{ currentUser.user_name.charAt(0).toUpperCase() }}</span>
+            <span class="username">{{ currentUser.user_name }}</span>
+          </div>
+          <div class="dropdown-menu">
+            <div class="dropdown-item user-details">
+              <div class="full-name">{{ currentUser.user_name }}</div>
+              <div class="email">{{ currentUser.email }}</div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="javascript:void(0)" (click)="logout()" class="dropdown-item logout-btn">
+              <span class="logout-icon">⟲</span> 登出
+            </a>
+          </div>
+        </li>
+        <li class="nav-item logout-button">
+          <a href="javascript:void(0)" (click)="logout()" class="logout-link">
+            登出
+          </a>
+        </li>
+      </ul>
+      <ul class="nav-list" *ngIf="!currentUser">
+        <li class="nav-item">
+          <a routerLink="/login" routerLinkActive="active">登入</a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/register" routerLinkActive="active">註冊</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>

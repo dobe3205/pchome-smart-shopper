@@ -1,0 +1,204 @@
+.header {
+  background-color: #1a73e8;
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo a {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.nav-list {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+
+.nav-item {
+  margin-left: 1.5rem;
+  position: relative;
+}
+
+.nav-item a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  position: relative;
+}
+
+.nav-item a.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: white;
+}
+
+.logout-button {
+  margin-left: 1rem;
+}
+
+.logout-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.logout-link:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-menu:hover .dropdown-menu {
+  display: block;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: white;
+  color: #1a73e8;
+  border-radius: 50%;
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.username {
+  font-weight: 500;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  z-index: 1000;
+  margin-top: 0.5rem;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: #333;
+  text-decoration: none;
+}
+
+.dropdown-item:hover {
+  background-color: #f1f3f4;
+}
+
+.user-details {
+  background-color: #f8f9fa;
+}
+
+.full-name {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.email {
+  font-size: 0.875rem;
+  color: #5f6368;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: #dadce0;
+  margin: 0;
+}
+
+.logout-btn {
+  color: #d93025;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.logout-icon {
+  margin-right: 0.5rem;
+  font-size: 1.125rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .nav {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  
+  .nav-list {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .nav-item {
+    margin-left: 0;
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+  
+  .user-menu {
+    width: 100%;
+  }
+  
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    margin-top: 0.5rem;
+  }
+  
+  .logout-button {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+  
+  .logout-link {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
