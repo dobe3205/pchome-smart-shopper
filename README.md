@@ -1,4 +1,4 @@
-# 基於 RAG 的商品比較系統
+# pchome智能助手
 
 一個使用RAG技術的商品比較系統。系統可以根據用戶需求，通過網路搜尋最新的產品資訊，並讓LLM生成產品比較分析和購買建議。
 
@@ -15,7 +15,7 @@
 ### 環境設定
 1. clone專案或下載原始碼
 2. 在 `backend/app/` 中建立.env檔案
-3. 在 `backend/app/.env` 中設定以上3組 API 金鑰以及自訂的model_name(Gemini)、secret_key(可為任意字串)：
+3. 在 `backend/app/.env` 中設定3組 API 金鑰以及自訂的model_name(Gemini)、secret_key(可為任意字串)：
    ```
    gemini_api_key="YOUR_GEMINI_API_KEY" 
    google_search_api_key="YOUR_GOOGLE_SEARCH_API_KEY"
@@ -41,8 +41,9 @@ docker-compose down
 
 ### 使用系統
 1. 開啟瀏覽器訪問 http://localhost
-2. 在輸入框中輸入您的商品需求，例如：「我想找一款適合遊戲的筆記型電腦，預算在3萬元以內，需要有好的散熱和獨立顯卡」
-3. 點擊「送出」按鈕，系統將開始處理您的請求
-4. 稍等片刻，系統將返回包含產品比較表、優缺點分析和整體總結
+2. 註冊或登入系統
+3. 在輸入框中輸入您的商品需求，例如：「我想找一款適合遊戲的筆記型電腦，預算在3萬元以內，需要有好的散熱和獨立顯卡」
+4. 點擊「送出」按鈕，系統將開始處理您的請求
+5. 稍等片刻，系統將返回包含產品比較表、優缺點分析和總結
 
 
