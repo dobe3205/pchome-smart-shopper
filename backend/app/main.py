@@ -216,7 +216,7 @@ origins = [
 app.add_middleware(
     CORSMiddleware, #CORS
     allow_origins=origins,  #允許的url
-    allow_credentials=True, #憑證
+    allow_credentials=True, 
     allow_methods=["*"],    #允許所有method(GET、POST...)
     allow_headers=["*"],    #允許所有header
 )

@@ -14,7 +14,7 @@ class RAGService:
     整合了關鍵字生成、Google搜尋、網頁爬蟲和LLM回應生成功能
     """
     
-    def __init__(self, gemini_api_key, google_search_api_key, google_cse_id, model_name="gemini-1.5-flash"):
+    def __init__(self, gemini_api_key, google_search_api_key, google_cse_id, model_name="gemini-2.0-flash"):
         """
         初始化RAG服務
         
@@ -123,13 +123,13 @@ class RAGService:
 
                 步驟3: 分析關鍵需求特徵
                 需求特徵: 遠端控制 → APP控制
-                        自動倒垃圾 → 自動集塵
+                        自動倒垃圾 → 自動
 
                 步驟4: 提取關鍵規格參數
                 規格參數: 預算10000左右 → 不納入關鍵字
 
                 步驟5: 組合最終關鍵字
-                最終關鍵字: 掃地機器人 APP控制 自動集塵
+                最終關鍵字: 掃地機器人 APP控制 自動
 
                 提問: 我想買一台三星最新的折疊手機，需要有較大的螢幕和長效電池，支援快速充電。
                 思考過程:
