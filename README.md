@@ -46,4 +46,6 @@ docker-compose down
 4. 點擊「送出」按鈕，系統將開始處理您的請求
 5. 稍等片刻，系統將返回包含產品比較表、優缺點分析和總結
 
-
+## Contributors
+- 前端:sm29729443(sm29729443@gmail.com)
+- 後端和RAG:dobe3205(3205hh@gmail.com)
